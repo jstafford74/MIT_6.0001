@@ -235,12 +235,15 @@ def hangman(secret_word:str):
 def match_with_gaps(my_word:str, other_word:str) -> bool:
   bool_list:list[str] = list()
   letter_list:list[str] = list()
+  
   my_adj_word = my_word.replace(" ","")
   
   if not len(my_adj_word) == len(other_word):
     return False
   
   for my_index,my_letter in enumerate(my_adj_word):
+    if "False" in bool_list:
+      break
     if my_letter.isalpha():      
       other_letter = other_word[my_index]
       if my_letter == other_letter:
@@ -248,36 +251,35 @@ def match_with_gaps(my_word:str, other_word:str) -> bool:
           letter_list.append(other_letter)
           bool_list.append("True")
         else:
-          bool_list.append("False")
+          bool_list.append("True")
+      else:
+        bool_list.append("False")
     else:
-      other_letter = other_word[my_index]
-      letter_list.append(other_letter)
-      my_index += 1
+      if my_letter in letter_list:
+        bool_list.append("False")
+      else:  
+        bool_list.append("True")
 
-      
+    
+    
   if "False" in bool_list:
     return False
-  else:
+  else: 
     return True
 
 
-def show_possible_matches(my_word):
-    '''
-    my_word: string with _ characters, current guess of secret word
-    returns: nothing, but should print out every word in wordlist that matches my_word
-             Keep in mind that in hangman when a letter is guessed, all the positions
-             at which that letter occurs in the secret word are revealed.
-             Therefore, the hidden letter(_ ) cannot be one of the letters in the word
-             that has already been revealed.
+def show_possible_matches(my_word:str):
+  wordlist = load_words()   
+  match_list:list[str] = list() 
+  for word in wordlist:
+    isPossMatch =  match_with_gaps(my_word,word)
+    if isPossMatch == True:
+      match_list.append(word)
 
-    '''
-    # FILL IN YOUR CODE HERE AND DELETE "pass"
-    pass
-
-
+  print(match_list)
 
 def hangman_with_hints(secret_word):
-    print(match_with_gaps("a_ _ le",secret_word))
+    show_possible_matches("t_ _ t")
     '''
     secret_word: string, the secret word to guess.
     
