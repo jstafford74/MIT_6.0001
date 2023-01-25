@@ -232,18 +232,33 @@ def hangman(secret_word:str):
 
 
 
-def match_with_gaps(my_word, other_word):
-    '''
-    my_word: string with _ characters, current guess of secret word
-    other_word: string, regular English word
-    returns: boolean, True if all the actual letters of my_word match the 
-        corresponding letters of other_word, or the letter is the special symbol
-        _ , and my_word and other_word are of the same length;
-        False otherwise: 
-    '''
-    # FILL IN YOUR CODE HERE AND DELETE "pass"
-    pass
+def match_with_gaps(my_word:str, other_word:str) -> bool:
+  bool_list:list[str] = list()
+  letter_list:list[str] = list()
+  my_adj_word = my_word.replace(" ","")
+  
+  if not len(my_adj_word) == len(other_word):
+    return False
+  
+  for my_index,my_letter in enumerate(my_adj_word):
+    if my_letter.isalpha():      
+      other_letter = other_word[my_index]
+      if my_letter == other_letter:
+        if not my_letter in letter_list:
+          letter_list.append(other_letter)
+          bool_list.append("True")
+        else:
+          bool_list.append("False")
+    else:
+      other_letter = other_word[my_index]
+      letter_list.append(other_letter)
+      my_index += 1
 
+      
+  if "False" in bool_list:
+    return False
+  else:
+    return True
 
 
 def show_possible_matches(my_word):
@@ -262,6 +277,7 @@ def show_possible_matches(my_word):
 
 
 def hangman_with_hints(secret_word):
+    print(match_with_gaps("a_ _ le",secret_word))
     '''
     secret_word: string, the secret word to guess.
     
@@ -289,7 +305,7 @@ def hangman_with_hints(secret_word):
     Follows the other limitations detailed in the problem write-up.
     '''
     # FILL IN YOUR CODE HERE AND DELETE "pass"
-    pass
+  
 
 
 
@@ -300,13 +316,13 @@ def hangman_with_hints(secret_word):
 
 
 if __name__ == "__main__":
-    # pass
+    
 
     # To test part 2, comment out the pass line above and
     # uncomment the following two lines.
     
-    secret_word = choose_word(wordlist)
-    hangman(secret_word)
+    # secret_word = choose_word(wordlist)
+    # hangman(secret_word)
 
 ###############
     
@@ -314,4 +330,5 @@ if __name__ == "__main__":
     # uncomment the following two lines. 
     
     #secret_word = choose_word(wordlist)
-    #hangman_with_hints(secret_word)
+    secret_word = "banana"
+    hangman_with_hints(secret_word)
