@@ -126,30 +126,38 @@ def get_available_letters(letters_guessed:list[str]) -> str:
   
   return "".join(all_letters)
       
+def getUniqueLetters(word:str)->list[str]:
+  unique:list[str] = list()
+  for letter in word:
+    if not letter in unique:
+      unique.append(letter)
+  
+  return unique
 
 def hangman(secret_word:str):
     ## Starts up an interactive game of Hangman.
     ## Constants
     num_guesses = int(6)
     warnings = int(3)
-    total_score = num_guesses
+    
     letterz_guessed:list[str] = list()
     current_word = get_guessed_word(secret_word,letterz_guessed)
     available_letters = get_available_letters(letterz_guessed)
     vowels = ["a","e","i","o","u"]
     consonants = get_available_letters(vowels)
+    unique_letters = getUniqueLetters(secret_word)
+    total_score = num_guesses * len(unique_letters)
     ## At the start of the game, let the user know how many 
     ## letters the secret_word contains and how many guesses s/he starts with.
     ## This code runs once at start up.
     print("Welcome to the game Hangman!")
     print("I am thinking of a word that is",len(secret_word),"letters long.")
-    print(current_word)
+    print("You have",warnings,"warnings left.")
     
     while is_word_guessed(secret_word,letterz_guessed) == False:
-      print(secret_word)
-      print("You have",warnings,"warnings left.")
+      print("---------------")
       print("You have",num_guesses,"guesses left.")
-      print("Remaining letters:",available_letters)
+      print("Available letters:",available_letters)
       cur_guess:str = input("Please guess a letter: ")
       
       ## Check if a letter, and only append to the list if it is a letter
@@ -157,11 +165,14 @@ def hangman(secret_word:str):
         ## Check if the letter has been guessed
         if cur_guess in letterz_guessed:
           if warnings == 0:
-            print("You lost a guess. Maximum warnings reached")
             num_guesses -= 1
+            print("Oops! You've already guessed that letter. You have no warnings left")
+            print("So you lose one guess:",current_word)
+            
           else:
             warnings -= 1
-            print("WARNING! You have already guessed that letter.",warnings,"left.")
+            print("Oops! You've already guessed that letter. You have",warnings,"warnings left:")
+            print(current_word)
         ## If the letter has not been guessed yet..
         else:
           ## Append list if letter is alpha and not guessed yet
@@ -177,11 +188,20 @@ def hangman(secret_word:str):
           else:
             if cur_guess in consonants:
               num_guesses -= 1
-              print("Oops! You lost a guess:",current_word)
+              print("Oops! That letter is not in my word:",current_word)
             if cur_guess in vowels:
               num_guesses -= 2
-              print("Oops! You lost 2 guesses:",current_word)
+              print("Oops! that letter is not in my word:",current_word)
       
+      ## Handle non alpha input
+      else:
+        if warnings == 0:
+            print("Oops! You've lost a guess. You have no warnings left")
+            num_guesses -= 1
+        else:
+          warnings -= 1
+          print("Oops! That is not a valid letter. You have",warnings,"warnings left:",current_word)
+        
       ## If maximum guesses reached, break the loop
       if num_guesses == 0:
         break
@@ -191,15 +211,16 @@ def hangman(secret_word:str):
         break
    
     if is_word_guessed(secret_word,letterz_guessed):
-        print("You win! The word was:",secret_word)
+        print("---------------")
+        print("Congratulations, you won!")
+        total_score = num_guesses * len(unique_letters)
+        print("Your total score for this game is:",total_score)
         
-
     else:
-      print("Sorry, you lose! The word was:",secret_word)
+      if num_guesses == 0:
+        print("---------------")
+        print("Sorry, you ran out of guesses. The word was",secret_word)
        
-hangman(secret_word)
-
-
 
 # When you've completed your hangman function, scroll down to the bottom
 # of the file and uncomment the first two lines to test
@@ -279,13 +300,13 @@ def hangman_with_hints(secret_word):
 
 
 if __name__ == "__main__":
-    pass
+    # pass
 
     # To test part 2, comment out the pass line above and
     # uncomment the following two lines.
     
-    # secret_word = choose_word(wordlist)
-    # hangman(secret_word)
+    secret_word = choose_word(wordlist)
+    hangman(secret_word)
 
 ###############
     
