@@ -196,7 +196,7 @@ def update_hand(hand:dict[str,int], word:str) -> dict[str, int]:
 
     return new_hand
          
-            
+WORDLIST = load_words()         
 #
 # Problem #3: Test word validity
 #
@@ -211,8 +211,48 @@ def is_valid_word(word:str, hand:dict[str,int], word_list:list[str]) -> bool:
     word_list: list of lowercase strings
     returns: boolean
     """
+    # Check if all letters in hand
+    lower_word = word.lower()
+    word_dict:dict[str,int] = get_frequency_dict(lower_word)
+    hand_copy_dict:dict[str,int] | bool = hand.copy()
+    
+    def find_searched_word(search_word:str,wordList:list[str]) -> bool:
+        lower_word = search_word.lower()
+        has_word = False
+        
+        for each_word in wordList:
+            if lower_word == each_word:
+                has_word = True
+        
+        return has_word
 
-    pass  # TO DO... Remove this line when you implement this function
+    has_word = find_searched_word(word,word_list)
+    ## Iterate through the hand and compare letter frequency to the word letter frequency
+    if has_word and len(hand.keys()) > 0:
+        for letter in enumerate(word_dict.keys()):
+            handFreq = hand.get(letter,0)
+            wordFreq = word_dict.get(letter,0)
+            #Player has the letter in hand
+            if handFreq > 0:
+            ## Player has exactly enough letters
+               if handFreq == wordFreq:
+                hand_copy_dict.pop(letter)
+            ## Player has more than enough letters
+               if handFreq > wordFreq:
+                hand_copy_dict[letter] = handFreq - wordFreq
+            ## Player does not have enough letters
+               if handFreq < wordFreq:
+                hand_copy_dict = False
+                break
+            else:
+                hand_copy_dict = False
+                break
+                   
+        if type(hand_copy_dict) == dict:
+           hand_copy_dict = True
+               
+    return hand_copy_dict             
+
 
 #
 # Problem #5: Playing a hand
