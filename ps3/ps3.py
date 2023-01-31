@@ -351,12 +351,12 @@ def play_hand(hand, word_list):
                
             # update the user's hand by removing the letters of their inputted word
             cur_hand = update_hand(cur_hand,cur_word)
-
-    print("Ran out of letters. Total score:",total_score,"points")
-    # Game is over (user entered '!!' or ran out of letters),
-    # so tell user the total score
-
-    # Return the total score as result of function
+    
+    if len(cur_hand.keys()) == 0:    
+        print("Ran out of letters. Total score for this hand:",total_score)
+    else:
+        print("Total score for this hand:",total_score)
+   
     return total_score
 
 
@@ -392,8 +392,27 @@ def substitute_hand(hand, letter):
     returns: dictionary (string -> int)
     """
     
-    pass  # TO DO... Remove this line when you implement this function
-       
+    is_vowel = True if VOWELS.find(letter) > 0 else False
+    is_consonant = True if CONSONANTS.find(letter) > 0 else False
+    
+    new_hand = hand.copy()
+    if letter in new_hand.keys():
+        freq = new_hand.get(letter)
+        new_hand.pop(letter)
+        if is_vowel:
+          vowels = list(VOWELS)
+          vowels.remove(letter)  
+          new_vowel = random.choice(vowels)
+          new_hand.update({new_vowel:freq})
+        if is_consonant:
+          consonants = list(CONSONANTS)
+          consonants.remove(letter)  
+          new_consonant = random.choice(consonants)
+          new_hand.update({new_consonant:freq})
+    else:
+        return new_hand
+    
+    return new_hand  
     
 def play_game(word_list):
     """
@@ -425,9 +444,43 @@ def play_game(word_list):
 
     word_list: list of lowercase strings
     """
-    hand = deal_hand(7)
-    play_hand({"a":1,"j":1,"e":1,"f":1,"*":1,"r":1,"x":1},word_list)
-    print("play_game not implemented.") # TO DO... Remove this line when you implement this function
+    
+    series_score:int = 0
+    HAND_SIZE = 7
+    num_hands:int = int(input("Enter total number of hands:"))
+    
+        
+    # if num_hands <= 0:
+    #     print("Please enter a number greater than or equal to 1")
+    #     num_hands:int = input("Enter total number of hands:")
+    
+    while num_hands > 0:
+        cur_hand_score:int = 0
+        hand = deal_hand(HAND_SIZE)
+        print("hand:",hand)
+        print("num hands:",num_hands)
+        displayHand = display_hand(hand)
+        print("Current Hand:",displayHand)
+        wants_substitution = input("Would you like to substitute a letter?")
+        
+        if wants_substitution.lower() == 'yes':
+            substitute_letter = input("Which letter would you like to replace:")
+            hand = substitute_hand(hand,substitute_letter)
+      
+        cur_hand_score += play_hand(hand,word_list)
+        print("------------")                        
+        wants_replay = input("Would you like to replay the hand?")
+       
+        if wants_replay == 'yes':
+            cur_hand_score = 0
+            cur_hand_score += play_hand(hand,word_list)
+            print("------------") 
+            num_hands -= 1 
+        else:
+            num_hands -= 1
+        series_score += cur_hand_score
+    print("Total score over all hands:",series_score)       
+  
     
 
 
