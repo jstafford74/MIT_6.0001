@@ -16,7 +16,7 @@ CONSONANTS = 'bcdfghjklmnpqrstvwxyz'
 HAND_SIZE = 7
 
 SCRABBLE_LETTER_VALUES = {
-    'a': 1, 'b': 3, 'c': 3, 'd': 2, 'e': 1, 'f': 4, 'g': 2, 'h': 4, 'i': 1, 'j': 8, 'k': 5, 'l': 1, 'm': 3, 'n': 1, 'o': 1, 'p': 3, 'q': 10, 'r': 1, 's': 1, 't': 1, 'u': 1, 'v': 4, 'w': 4, 'x': 8, 'y': 4, 'z': 10
+    'a': 1, 'b': 3, 'c': 3, 'd': 2, 'e': 1, 'f': 4, 'g': 2, 'h': 4, 'i': 1, 'j': 8, 'k': 5, 'l': 1, 'm': 3, 'n': 1, 'o': 1, 'p': 3, 'q': 10, 'r': 1, 's': 1, 't': 1, 'u': 1, 'v': 4, 'w': 4, 'x': 8, 'y': 4, 'z': 10, '*':0
 }
 
 # -----------------------------------
@@ -102,9 +102,11 @@ def get_word_score(word:str, n:int) -> int:
     else:
         for letter in word:
             letter_score = SCRABBLE_LETTER_VALUES[letter]
+            
             first_component_score += letter_score
-        
-        return first_component_score * second_component_score
+           
+         
+    return first_component_score * second_component_score
 
 #
 # Make sure you understand how this function works and what it does!
@@ -121,12 +123,11 @@ def display_hand(hand):
 
     hand: dictionary (string -> int)
     """
-    
+    keys:list[str] = []
     for letter in hand.keys():
-        for j in range(hand[letter]):
-             print(letter, end=' ')      # print all on the same line
-    print()                              # print an empty line
-
+        keys.append(letter)      # print all on the same line
+    # print()                              # print an empty line
+    return " ".join(keys)
 #
 # Make sure you understand how this function works and what it does!
 # You will need to modify this for Problem #4.
@@ -148,7 +149,7 @@ def deal_hand(n):
     hand={}
     num_vowels = int(math.ceil(n / 3))
 
-    for i in range(num_vowels):
+    for i in range(num_vowels - 1):
         x = random.choice(VOWELS)
         hand[x] = hand.get(x, 0) + 1
     
@@ -156,6 +157,7 @@ def deal_hand(n):
         x = random.choice(CONSONANTS)
         hand[x] = hand.get(x, 0) + 1
     
+    hand['*'] = 1
     return hand
 
 #
@@ -215,57 +217,75 @@ def is_valid_word(word:str, hand:dict[str,int], word_list:list[str]) -> bool:
     lower_word = word.lower()
     word_dict:dict[str,int] = get_frequency_dict(lower_word)
     hand_copy_dict:dict[str,int] | bool = hand.copy()
+    poss_words:set[str] = {''}
+    has_word:bool = False
     
-    def find_searched_word(search_word:str,wordList:list[str]) -> bool:
-        lower_word = search_word.lower()
-        has_word = False
-        
-        for each_word in wordList:
-            if lower_word == each_word:
-                has_word = True
-        
-        return has_word
-
-    has_word = find_searched_word(word,word_list)
+    def starred_words(word:str) -> set[str] :       
+        starred_words:set[str] = set()
+        if '*' in word:
+            starred_words.add(word)
+            return starred_words
+        for index,letter in enumerate(word):
+            starred_word = list(word.lower())
+            if letter.lower() in VOWELS:
+                new_word = starred_word
+                new_word[index] = "*"
+                starred_words.add("".join(new_word))
+            
+        return starred_words
+    
+    for each_word in word_list:
+        if len(each_word) == len(word):
+            check_words = starred_words(each_word)
+            starredWords = starred_words(word)
+            has_word = True if len(check_words.intersection(starredWords)) > 0 else False
+            if has_word == True:
+                poss_words = check_words.intersection(starredWords)
+                poss_words.add(word)
+   
+    has_word = True if word in list(poss_words) else False
+    
     ## Iterate through the hand and compare letter frequency to the word letter frequency
     if has_word and len(hand.keys()) > 0:
-        for letter in enumerate(word_dict.keys()):
+        for letter in word_dict.keys():
             handFreq = hand.get(letter,0)
             wordFreq = word_dict.get(letter,0)
             #Player has the letter in hand
             if handFreq > 0:
             ## Player has exactly enough letters
-               if handFreq == wordFreq:
+               if handFreq == wordFreq:              
                 hand_copy_dict.pop(letter)
             ## Player has more than enough letters
                if handFreq > wordFreq:
-                hand_copy_dict[letter] = handFreq - wordFreq
+                hand_copy_dict[letter] = handFreq - wordFreq              
             ## Player does not have enough letters
-               if handFreq < wordFreq:
+               if handFreq < wordFreq:                
                 hand_copy_dict = False
                 break
             else:
                 hand_copy_dict = False
                 break
                    
-        if type(hand_copy_dict) == dict:
+        if type(hand_copy_dict) == dict: 
            hand_copy_dict = True
-               
+    else:
+        hand_copy_dict = False                   
+    
     return hand_copy_dict             
 
 
 #
 # Problem #5: Playing a hand
 #
-def calculate_handlen(hand):
+def calculate_handlen(hand:dict[str,int]) -> int:
     """ 
     Returns the length (number of letters) in the current hand.
     
     hand: dictionary (string-> int)
     returns: integer
-    """
-    
-    pass  # TO DO... Remove this line when you implement this function
+    """    
+    hand_len:int = len(hand.keys())
+    return hand_len
 
 def play_hand(hand, word_list):
 
@@ -273,7 +293,7 @@ def play_hand(hand, word_list):
     Allows the user to play the given hand, as follows:
 
     * The hand is displayed.
-    
+
     * The user may input a word.
 
     * When any word is entered (valid or invalid), it uses up letters
@@ -297,39 +317,47 @@ def play_hand(hand, word_list):
       returns: the total score for the hand
       
     """
-    
-    # BEGIN PSEUDOCODE <-- Remove this comment when you implement this function
+    cur_hand = hand.copy()
     # Keep track of the total score
-    
+    total_score = 0
     # As long as there are still letters left in the hand:
-    
-        # Display the hand
+    while len(cur_hand.keys()) > 0:
+    # Display the hand
+        displayHand = display_hand(cur_hand)
+        print("Current Hand:",displayHand)
         
-        # Ask user for input
-        
-        # If the input is two exclamation points:
-        
+    # Ask user for input
+        cur_word:str = input("Enter word, or '!!' to indicate that your are finished:")  
+    # If the input is two exclamation points:
+        if cur_word == '!!':
+            print("Total score:",total_score,"points")
+            break    
             # End the game (break out of the loop)
 
             
         # Otherwise (the input is not two exclamation points):
-
+        else:
             # If the word is valid:
-
+            if is_valid_word(cur_word,cur_hand, word_list) is True:
+                cur_score = get_word_score(cur_word,len(cur_hand.keys()))
+                total_score += cur_score
                 # Tell the user how many points the word earned,
                 # and the updated total score
-
+                print(f'"{cur_word}" earned {cur_score} points. Total: {total_score} points')
             # Otherwise (the word is not valid):
                 # Reject invalid word (print a message)
-                
+            else:
+                print("That is not a valid word. Please choose another word") 
+               
             # update the user's hand by removing the letters of their inputted word
-            
+            cur_hand = update_hand(cur_hand,cur_word)
 
+    print("Ran out of letters. Total score:",total_score,"points")
     # Game is over (user entered '!!' or ran out of letters),
     # so tell user the total score
 
     # Return the total score as result of function
-
+    return total_score
 
 
 #
@@ -397,7 +425,8 @@ def play_game(word_list):
 
     word_list: list of lowercase strings
     """
-    
+    hand = deal_hand(7)
+    play_hand({"a":1,"j":1,"e":1,"f":1,"*":1,"r":1,"x":1},word_list)
     print("play_game not implemented.") # TO DO... Remove this line when you implement this function
     
 
